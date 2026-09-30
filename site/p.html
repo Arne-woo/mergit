@@ -131,6 +131,7 @@ footer a:hover{color:var(--ink)}
   <div class="stats" id="stats" hidden>
     <div class="stat"><div class="k">Paid for merged work</div><div class="v r" id="s-total">—</div><div class="s" id="s-total-sub">on GIWA Sepolia</div></div>
     <div class="stat"><div class="k">Bounties settled</div><div class="v" id="s-count">—</div><div class="s" id="s-count-sub">verified by the agent</div></div>
+    <div class="stat"><div class="k">Paid by</div><div class="v" id="s-funders">—</div><div class="s" id="s-funders-sub">wallets other than this one</div></div>
     <div class="stat"><div class="k">Claimed on-chain</div><div class="v" id="s-since">—</div><div class="s" id="s-since-sub">one wallet, one login</div></div>
   </div>
 
@@ -262,6 +263,17 @@ async function logsOf(address) {
   }
 }
 
+/**
+ * Quién puso el dinero. Es la columna que hace comprobable lo que esta página
+ * afirma: un historial pagado por una sola wallet no vale lo mismo que uno
+ * pagado por varias, y el lector no tiene por qué creernos, puede mirarlo.
+ */
+function funderCell(e) {
+  if (!e.funder) return '<span style="color:var(--dim)">not read</span>';
+  if (e.self) return '<span style="color:var(--dim)">this wallet</span>';
+  return `<a href="${EXPLORER}/address/${e.funder}" rel="noopener">${short(e.funder)}</a>`;
+}
+
 function tagFor(state) {
   if (state === "paid") return '<span class="tag good"><i></i>Paid</span>';
   if (state === "self") return '<span class="tag"><i></i>Self-funded</span>';
@@ -298,6 +310,7 @@ function renderPayments(wallet, paid, pending) {
     return `<tr>
       <td><b>#${esc(e.bountyId)}</b></td>
       <td>${tagFor(e.state)}</td>
+      <td>${funderCell(e)}</td>
       <td class="amount">${amount}</td>
       <td>${fee}</td>
       <td>${when}</td>
@@ -306,7 +319,7 @@ function renderPayments(wallet, paid, pending) {
     </tr>`;
   }).join("");
   out.innerHTML = `<div class="wrap"><table>
-    <thead><tr><th>Bounty</th><th>State</th><th>To the developer</th><th>Protocol fee</th><th>Date</th><th>Contract</th><th>Transaction</th></tr></thead>
+    <thead><tr><th>Bounty</th><th>State</th><th>Funded by</th><th>To the developer</th><th>Protocol fee</th><th>Date</th><th>Contract</th><th>Transaction</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
 
@@ -369,9 +382,10 @@ async function load() {
       for (const e of events) {
         if (e.developer?.toLowerCase() !== want) continue;
         if (Number(e.bountyId) < from) continue;
-        const self = funders.get(String(e.bountyId)) === want;
-        if (e.kind === "BountySettled") paid.push({ ...e, v, self, state: self ? "self" : "paid" });
-        if (e.kind === "SettlementProposed") pending.push({ ...e, v, self, state: "pending" });
+        const funder = funders.get(String(e.bountyId)) ?? "";
+        const self = funder === want;
+        if (e.kind === "BountySettled") paid.push({ ...e, v, funder, self, state: self ? "self" : "paid" });
+        if (e.kind === "SettlementProposed") pending.push({ ...e, v, funder, self, state: "pending" });
       }
     } catch {
       // un escrow que no responde no puede inventar un pago: se cuenta como no leído
@@ -393,6 +407,15 @@ async function load() {
   $("stats").hidden = false;
   $("s-total").textContent = total ? `${eth(total)}` : "0";
   $("s-total-sub").textContent = "ETH on GIWA Sepolia";
+  // Financiadores distintos. Es el número que cuesta de verdad: inflar el total
+  // solo necesita una segunda wallet, pero subir este hay que convencer a gente
+  // distinta. Un financiador que no se pudo leer no cuenta, para no inflarlo.
+  const distinctFunders = new Set(earned.map((e) => e.funder).filter(Boolean));
+  $("s-funders").textContent = String(distinctFunders.size);
+  $("s-funders-sub").textContent = distinctFunders.size === 1
+    ? "a single funder so far"
+    : distinctFunders.size === 0 ? "nobody else has funded this work yet" : "wallets other than this one";
+
   $("s-count").textContent = String(earned.length);
   $("s-count-sub").textContent = [
     stillPending.length ? `${stillPending.length} waiting out a challenge window` : "",
