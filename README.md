@@ -19,7 +19,7 @@ Submitted to **GASOK 2026**, Track 04 — AI / Web3.
 | ⛓ Paid on merge | [`0x567a7c4b…bc44`](https://sepolia-explorer.giwa.io/tx/0x567a7c4b851b8b09f10d3aee2caea4883c6859a7aec625e2d1e750c7c161bc44) — [mergit-demo#2](https://github.com/odiseo159-beep/mergit-demo/pull/2) merged 00:49:36, paid 00:49:56 UTC |
 | 🪪 Identity registry | [`0x79d44543d20c7c6653f6626687d67d2cd7f2af9c`](https://sepolia-explorer.giwa.io/address/0x79d44543d20c7c6653f6626687d67d2cd7f2af9c) — **verified**. One wallet, one GitHub login, one proof |
 | ⏳ Escrow with a challenge window | [`0x48d506080abdbed11f1acbe40f799301d9612ad5`](https://sepolia-explorer.giwa.io/address/0x48d506080abdbed11f1acbe40f799301d9612ad5) — **verified**. Opt-in per bounty; zero seconds behaves like the escrow above |
-| 🖥 From the browser | [mergit.xyz/post](https://www.mergit.xyz/post) to fund a bounty, [mergit.xyz/claim](https://www.mergit.xyz/claim) to claim a login, [mergit.xyz/p/odiseo159-beep](https://www.mergit.xyz/p/odiseo159-beep) for a builder's record |
+| 🖥 From the browser | [mergit.xyz/post](https://www.mergit.xyz/post) to fund a bounty, [mergit.xyz/register](https://www.mergit.xyz/register) to register a login, [mergit.xyz/p/odiseo159-beep](https://www.mergit.xyz/p/odiseo159-beep) for a builder's record |
 
 On 19 September 2026 nobody ran a command: the merge woke the agent inside GitHub Actions, it
 verified the pull request, and the escrow paid the developer **20 seconds later**. Every amount,

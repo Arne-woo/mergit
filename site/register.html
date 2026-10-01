@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claim your GitHub login — Mergit</title>
-<meta name="description" content="Tie your GitHub login to your wallet on GIWA Chain, with a proof anyone can check. Merged work then pays the address you claimed.">
-<link rel="canonical" href="https://www.mergit.xyz/claim">
+<title>Register your GitHub login — Mergit</title>
+<meta name="description" content="Register your GitHub login against your wallet on GIWA Chain, with a proof anyone can check. Merged work then pays the address you registered.">
+<link rel="canonical" href="https://www.mergit.xyz/register">
 <meta name="theme-color" content="#0a0a0b">
-<meta property="og:title" content="Claim your GitHub login — Mergit">
-<meta property="og:description" content="Tie your GitHub login to your wallet on GIWA Chain, with a proof anyone can check.">
-<meta property="og:url" content="https://www.mergit.xyz/claim">
+<meta property="og:title" content="Register your GitHub login — Mergit">
+<meta property="og:description" content="Register your GitHub login against your wallet on GIWA Chain, with a proof anyone can check.">
+<meta property="og:url" content="https://www.mergit.xyz/register">
 <meta property="og:image" content="https://www.mergit.xyz/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -106,8 +106,8 @@ footer a:hover{color:var(--ink)}
 
 <main>
   <p class="kicker">Build</p>
-  <h1>Claim your login. <span class="r">Get paid there.</span></h1>
-  <p class="lede">Say on-chain that a GitHub account is yours, and point at a proof only that account could publish. From then on, a bounty for your merged work pays <b>the wallet you claimed</b>, not an address someone else wrote in a file.</p>
+  <h1>Register your login. <span class="r">Get paid there.</span></h1>
+  <p class="lede">The escrow pays a wallet, so it has to know which wallet is yours. You record on-chain that a GitHub account belongs to you and point at a proof only that account could publish. From then on, a bounty for your merged work pays <b>the wallet you registered</b>, not an address someone else wrote in a file. Mergit never sees a key: your wallet signs, and the only thing it signs is this record.</p>
 
   <div class="grid">
     <form id="form" autocomplete="off">
@@ -125,24 +125,24 @@ footer a:hover{color:var(--ink)}
 
       <button type="button" id="connect">Connect wallet</button>
       <button type="button" id="check" disabled>Check the proof</button>
-      <button type="button" id="claim" disabled>Claim it on-chain</button>
+      <button type="button" id="claim" disabled>Register it on-chain</button>
     </form>
 
     <aside>
       <div class="card">
         <h2>Publish the proof first</h2>
-        <p>Put this line in a public gist, or in the README of the repository named after you:</p>
+        <p>Put this line in a public gist, or in the README of the repository named after you. It is what makes the record true, and anyone can re-read it later:</p>
         <div class="snippet" id="snippet">Connect your wallet and this line will say your address.</div>
         <button class="ghost" id="copy" disabled>Copy the line</button>
       </div>
 
       <div class="card">
         <h2>Why on-chain</h2>
-        <p>The contract cannot read GitHub, so it does not check the proof: it records the claim, its date and where the proof lives. Anyone can then re-check it, and the agent does exactly that before paying. A claim whose proof does not hold is not paid.</p>
+        <p>The contract cannot read GitHub, so it does not check the proof: it records the login, its date and where the proof lives. Anyone can then re-check it, and the agent does exactly that before paying. <b>A record whose proof does not hold is not paid</b>, and the agent never falls back to a file.</p>
       </div>
 
       <div class="card">
-        <h2>Already claimed?</h2>
+        <h2>Already registered?</h2>
         <p>Type your login and press <b>Check the proof</b>: if the login is taken, the page tells you by whom. To move a login to another wallet, the current one releases it first.</p>
       </div>
     </aside>
@@ -351,7 +351,13 @@ $("claim").addEventListener("click", async () => {
       $("claim").disabled = false;
       return;
     }
-    waiting.innerHTML = `Claimed in block ${Number(receipt.blockNumber)}. <a href="${EXPLORER}/tx/${txHash}">See the transaction</a>`;
+    const who = $("login").value.trim().toLowerCase();
+    waiting.innerHTML = `Registered in block ${Number(receipt.blockNumber)}. <a href="${EXPLORER}/tx/${txHash}">See the transaction</a>`;
+    // El registro no termina en una transaccion: termina en algo que la persona
+    // puede mirar y mostrar. Si no se lo damos aqui, no lo busca nunca.
+    say(`Your record is now at <a href="/p/${encodeURIComponent(who)}"><b>mergit.xyz/p/${who}</b></a>`);
+    say(`Put this in your README if you want it to show:<br>` +
+        `<code style="user-select:all">![Mergit](https://www.mergit.xyz/badge/${who}.svg)</code>`);
     say(`<b>@${login}</b> now pays to <b>${account}</b>. Merged work with a bounty settles there.`, "line ok");
   } catch (e) {
     say(`${e.shortMessage ?? e.message}`, "line err");

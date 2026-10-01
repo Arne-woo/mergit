@@ -16,10 +16,26 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/claim",
+      "destination": "/register",
+      "permanent": true
+    },
+    {
+      "source": "/claim.html",
+      "destination": "/register",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/p/:login",
       "destination": "/p?login=:login"
+    },
+    {
+      "source": "/badge/:file",
+      "destination": "/api/badge?file=:file"
     }
   ]
 }

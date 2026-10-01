@@ -90,7 +90,7 @@ repository that matters.
 
 The escrow pays a wallet, so the author's GitHub login has to resolve to one.
 
-Send them to **https://www.mergit.xyz/claim**. They claim their login from their own wallet and
+Send them to **https://www.mergit.xyz/register**. They register their login from their own wallet and
 publish a proof: a gist, or a line in the README of their profile repository. The verifier
 re-checks that proof against GitHub before it releases anything, and **if the proof is broken,
 nothing is paid**. It does not silently fall back to a file.
