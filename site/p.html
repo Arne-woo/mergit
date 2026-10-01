@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Builder record — Mergit</title>
-<meta name="description" content="What a GitHub account claimed on GIWA Chain, and every bounty its merged work was paid. Read from the chain, with the proof re-checked live.">
+<meta name="description" content="What a GitHub account registered on GIWA Chain, and every bounty its merged work was paid. Read from the chain, with the proof re-checked live.">
 <link rel="canonical" href="https://www.mergit.xyz/p">
 <meta name="theme-color" content="#0a0a0b">
 <meta property="og:title" content="Builder record — Mergit">
-<meta property="og:description" content="A GitHub account, the wallet that claimed it, the proof, and every payment its merged work earned.">
+<meta property="og:description" content="A GitHub account, the wallet that registered it, the proof, and every payment its merged work earned.">
 <meta property="og:url" content="https://www.mergit.xyz/p">
 <meta property="og:image" content="https://www.mergit.xyz/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -45,6 +45,14 @@ main{max-width:1080px;margin:0 auto;padding:clamp(40px,7vh,90px) var(--pad) 90px
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:12px}
 .kicker::before{content:"";width:26px;height:1px;background:var(--red)}
 h1{margin-top:20px;font-weight:800;font-size:clamp(34px,5vw,64px);line-height:1;letter-spacing:-.04em;word-break:break-word}
+.head{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.head h1{margin-top:0;min-width:0}
+.gh-av{width:clamp(56px,7vw,88px);height:clamp(56px,7vw,88px);border-radius:50%;
+  border:1px solid var(--line);flex:none;background:#15151a}
+/* lo que la persona dice de si misma, marcado como tal: no sale de la cadena */
+.gh-bio{margin-top:14px;max-width:62ch;color:var(--mute);font-size:15px;line-height:1.55}
+.gh-bio span{display:block;margin-bottom:5px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
 h1 .r{color:var(--red)}
 .lede{margin-top:18px;max-width:62ch;color:var(--mute);font-size:clamp(15px,1.2vw,17px);line-height:1.6}
 .lede b{color:var(--ink);font-weight:500}
@@ -112,7 +120,7 @@ footer a:hover{color:var(--ink)}
   </a>
   <span class="right">
     <span id="src">reading the chain</span>
-    <a href="/claim">Claim a login</a>
+    <a href="/register">Register a login</a>
     <a href="/post">Post a bounty</a>
     <a href="/docs">Docs</a>
   </span>
@@ -120,7 +128,11 @@ footer a:hover{color:var(--ink)}
 
 <main>
   <p class="kicker">Builder record</p>
-  <h1 id="title">Loading…</h1>
+  <div class="head">
+    <img class="gh-av" id="gh-av" alt="" hidden>
+    <h1 id="title">Loading…</h1>
+  </div>
+  <p class="gh-bio" id="gh-bio" hidden></p>
   <p class="lede" id="lede">Everything below is read from GIWA Sepolia. Nothing here was written by Mergit: the claim lives in the registry contract, the payments are escrow events, and <b>the proof is re-checked against GitHub every time this page loads</b>.</p>
 
   <form class="find" id="find" autocomplete="off">
@@ -132,7 +144,7 @@ footer a:hover{color:var(--ink)}
     <div class="stat"><div class="k">Paid for merged work</div><div class="v r" id="s-total">—</div><div class="s" id="s-total-sub">on GIWA Sepolia</div></div>
     <div class="stat"><div class="k">Bounties settled</div><div class="v" id="s-count">—</div><div class="s" id="s-count-sub">verified by the agent</div></div>
     <div class="stat"><div class="k">Paid by</div><div class="v" id="s-funders">—</div><div class="s" id="s-funders-sub">wallets other than this one</div></div>
-    <div class="stat"><div class="k">Claimed on-chain</div><div class="v" id="s-since">—</div><div class="s" id="s-since-sub">one wallet, one login</div></div>
+    <div class="stat"><div class="k">Registered on-chain</div><div class="v" id="s-since">—</div><div class="s" id="s-since-sub">one wallet, one login</div></div>
   </div>
 
   <section id="claim-sec">
@@ -297,6 +309,32 @@ function renderClaim(login, claim, proof) {
   $("claim-card").innerHTML = rows.map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
 }
 
+/**
+ * La cara y la bio de GitHub. No prueban nada y no salen de la cadena: por eso
+ * la bio va etiquetada como lo que es, algo que esa persona escribió sobre sí
+ * misma. El avatar se pide a github.com/<login>.png, que no gasta cuota de API.
+ * Si algo falla, el expediente se muestra igual.
+ */
+async function showGitHubProfile(login) {
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(login)) return;
+  const av = $("gh-av");
+  av.src = `https://github.com/${encodeURIComponent(login)}.png?size=200`;
+  av.alt = `${login} on GitHub`;
+  av.hidden = false;
+  av.onerror = () => { av.hidden = true; };
+  try {
+    const r = await fetch(`${GH}/users/${encodeURIComponent(login)}`);
+    if (!r.ok) return;
+    const u = await r.json();
+    const bits = [u.name, u.bio].filter(Boolean).map(esc);
+    if (!bits.length) return;
+    $("gh-bio").innerHTML = `<span>from their GitHub profile</span>${bits.join(" · ")}`;
+    $("gh-bio").hidden = false;
+  } catch {
+    // sin bio se vive bien; el expediente es lo que importa
+  }
+}
+
 function renderPayments(wallet, paid, pending) {
   const out = $("paid-out");
   if (!paid.length && !pending.length) {
@@ -335,6 +373,7 @@ async function load() {
   }
 
   $("title").innerHTML = `@${esc(login)}`;
+  showGitHubProfile(login);
   document.title = `@${login} — Mergit`;
 
   let claim = null;
@@ -347,10 +386,10 @@ async function load() {
   }
 
   if (!claim) {
-    $("title").innerHTML = `@${esc(login)} <span class="r">has not claimed.</span>`;
+    $("title").innerHTML = `@${esc(login)} <span class="r">has not registered.</span>`;
     $("claim-card").innerHTML = `<div class="row"><span class="k">Registry</span><span class="v">no wallet claims this login</span></div>
       <div class="row"><span class="k">What that means</span><span class="v">merged work by this account cannot be paid through the registry</span></div>
-      <div class="row"><span class="k">Fix it</span><span class="v"><a href="/claim">claim it from your wallet</a></span></div>`;
+      <div class="row"><span class="k">Fix it</span><span class="v"><a href="/register">register it from your wallet</a></span></div>`;
     $("paid-out").innerHTML = '<div class="empty">Nothing on-chain ties this login to an address, so there is nothing to show.</div>';
     $("src").textContent = "read from the chain";
     return;
