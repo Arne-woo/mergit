@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start merging — Mergit</title>
+<meta name="description" content="Pay for work, get paid for work, or check what somebody was actually paid. The three ways into Mergit, on GIWA Chain.">
+<link rel="canonical" href="https://www.mergit.xyz/start">
+<meta name="theme-color" content="#0a0a0b">
+<meta property="og:title" content="Start merging — Mergit">
+<meta property="og:description" content="Pay for work, get paid for work, or check what somebody was actually paid.">
+<meta property="og:url" content="https://www.mergit.xyz/start">
+<meta property="og:image" content="https://www.mergit.xyz/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Reclamar un login desde el navegador. La página comprueba la prueba contra
+   GitHub ANTES de pedir la firma: reclamar con una prueba rota solo gasta gas. */
+:root{
+  --bg:#0a0a0b; --ink:#ededf0; --mute:#8a8a93; --dim:#55555d; --line:#26262c; --red:#ff2d2d; --ok:#3ddc84;
+  --sans:"Geist",system-ui,-apple-system,sans-serif; --mono:"Geist Mono",ui-monospace,monospace;
+  --pad:clamp(20px,4vw,72px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--red);color:#0a0a0b}
+
+.nav{display:flex;align-items:center;justify-content:space-between;padding:18px var(--pad);
+  font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;letter-spacing:.2em;font-weight:500}
+.brand svg{width:22px;height:22px}
+.nav a:hover{color:var(--red)}
+.nav .right{display:flex;align-items:center;gap:18px;color:var(--mute)}
+
+main{max-width:1080px;margin:0 auto;padding:clamp(40px,7vh,90px) var(--pad) 90px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:26px;height:1px;background:var(--red)}
+h1{margin-top:20px;font-weight:800;font-size:clamp(34px,5vw,64px);line-height:1;letter-spacing:-.04em}
+h1 .r{color:var(--red)}
+.lede{margin-top:18px;max-width:62ch;color:var(--mute);font-size:clamp(15px,1.2vw,17px);line-height:1.6}
+.lede b{color:var(--ink);font-weight:500}
+
+.grid{margin-top:46px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(24px,4vw,56px);align-items:start}
+form{border:1px solid var(--line);padding:clamp(20px,3vw,32px);background:#0c0c0e}
+label{display:block;margin-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+label:first-of-type{margin-top:0}
+input{width:100%;margin-top:8px;background:#0a0a0b;color:var(--ink);border:1px solid var(--line);
+  padding:13px 14px;font-family:var(--mono);font-size:14px;transition:border-color .2s}
+input:focus{outline:none;border-color:var(--red)}
+input:disabled{color:var(--dim)}
+.hint{margin-top:7px;font-size:12.5px;color:var(--dim);line-height:1.5}
+button{margin-top:22px;width:100%;font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+  padding:16px;border:1px solid var(--red);background:var(--red);color:#0a0a0b;font-weight:500;cursor:pointer;transition:.2s}
+button:hover:not(:disabled){background:#ff4a4a}
+button:disabled{background:transparent;color:var(--dim);border-color:var(--line);cursor:not-allowed}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+button.ghost:hover:not(:disabled){border-color:var(--ink)}
+
+aside{font-family:var(--mono);font-size:13px;line-height:1.75}
+aside h2{font-family:var(--sans);font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px}
+.card{border:1px solid var(--line);padding:22px}
+.card+.card{margin-top:18px}
+.card p{color:var(--mute)}
+.snippet{margin-top:12px;padding:12px 14px;border:1px dashed var(--line);color:var(--ink);word-break:break-all;font-size:12.5px}
+.snippet button{margin-top:10px;width:auto;padding:7px 11px;font-size:11px}
+
+.log{margin-top:24px;border:1px solid var(--line);padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.8;display:none}
+.log.on{display:block}
+.log .line{color:var(--mute)}
+.log .line b{color:var(--ink);font-weight:500}
+.log .ok::before{content:"✓ ";color:var(--red)}
+.log .err{color:var(--red)}
+.log a{color:var(--mute);border-bottom:1px dotted var(--dim)}
+.log a:hover{color:var(--ink)}
+
+.dot{width:8px;height:8px;border-radius:50%;background:var(--dim);display:inline-block}
+.dot.on{background:var(--ok)}
+
+footer{border-top:1px solid var(--line);padding:30px var(--pad);font-family:var(--mono);font-size:12px;color:var(--dim);
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer a:hover{color:var(--ink)}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.nav .right span{display:none}}
+
+.paths{margin-top:46px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line)}
+.path{display:block;background:var(--bg);padding:30px 26px 26px;text-decoration:none;color:inherit;
+  transition:background .18s}
+.path:hover{background:#111116}
+.path .n{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--red)}
+.path h2{margin-top:14px;font-size:25px;font-weight:700;letter-spacing:-.02em}
+.path p{margin-top:12px;color:var(--mute);font-size:15px;line-height:1.6}
+.path p b{color:var(--ink);font-weight:500}
+.path .need{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--dim);line-height:1.5}
+.path .go{display:inline-block;margin-top:20px;font-family:var(--mono);font-size:13px;
+  letter-spacing:.08em;color:var(--red)}
+.note{margin-top:40px;border-left:2px solid var(--line);padding:4px 0 4px 22px;max-width:70ch}
+.note h3{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.note p{margin-top:12px;color:var(--mute);font-size:15px;line-height:1.65}
+.note p b{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="/">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M18 72 V24 L50 56 L82 24 V72" fill="none" stroke="#ededf0" stroke-width="12" stroke-linecap="square" stroke-linejoin="round"/><line x1="50" y1="56" x2="50" y2="92" stroke="#ff2d2d" stroke-width="12"/><circle cx="18" cy="24" r="8.5" fill="#ededf0"/><circle cx="82" cy="24" r="8.5" fill="#ededf0"/><circle cx="50" cy="56" r="12" fill="#ff2d2d"/></svg>
+    Mergit
+  </a>
+  <span class="right">
+    <a href="/docs">Docs</a>
+  </span>
+</nav>
+
+<main>
+  <p class="kicker">Start</p>
+  <h1>Start merging.</h1>
+  <p class="lede">Three things live here. Which one you want depends on whether you are paying for
+  work, doing the work, or checking somebody who did it.</p>
+
+  <div class="paths">
+
+    <a class="path" href="/post">
+      <p class="n">01</p>
+      <h2>I want to pay for work</h2>
+      <p>Lock a reward on a piece of work. The money sits in a contract on GIWA and nobody can move
+      it, Mergit included. When the pull request is merged and CI is green, the developer is paid.
+      You get back a line to paste in the issue.</p>
+      <p class="need">You need a wallet and the amount.</p>
+      <span class="go">Post a bounty &rarr;</span>
+    </a>
+
+    <a class="path" href="/register">
+      <p class="n">02</p>
+      <h2>I want to get paid</h2>
+      <p>The escrow pays a wallet, so it has to know which one is yours. Put one line naming Mergit
+      and your address in your GitHub profile README, and that is enough to be paid.</p>
+      <p class="need">Nothing else. No wallet to connect, no gas, no transaction.</p>
+      <span class="go">Or register on-chain &rarr;</span>
+    </a>
+
+    <a class="path" href="/p/odiseo159-beep">
+      <p class="n">03</p>
+      <h2>I want to check someone</h2>
+      <p>Every builder has a page: what they were paid, which bounty, and <b>who funded it</b>.
+      None of it was written by them or by us. It is read from the chain, and the proof is
+      re-checked against GitHub every time the page loads.</p>
+      <p class="need">You need their GitHub login.</p>
+      <span class="go">Look up a builder &rarr;</span>
+    </a>
+
+  </div>
+
+  <div class="note">
+    <h3>About registering on-chain</h3>
+    <p>Writing the line in your profile README is enough to be paid, and it costs nothing. Registering
+    on-chain is the stronger version of the same thing: it stamps the date, gives you a builder page
+    and a badge for your README, and it cannot be overridden by the owner of a repository you
+    contribute to. <b>It is an upgrade, not a toll.</b></p>
+    <p>One wallet holds one login, and the wallet that signs is the wallet that gets paid. If you
+    want to move a login to another wallet, the current one releases it first.</p>
+  </div>
+</main>
+
+<footer>
+  <span>MERG<span style="color:var(--red)">IT</span> — Merge it. Get paid.</span>
+  <span><a href="https://github.com/odiseo159-beep/mergit">GitHub</a> · <a href="/docs">Docs</a> · <a href="https://x.com/MergitonGIWA">@MergitonGIWA</a></span>
+</footer>
+
