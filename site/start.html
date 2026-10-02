@@ -23,6 +23,7 @@
    GitHub ANTES de pedir la firma: reclamar con una prueba rota solo gasta gas. */
 :root{
   --bg:#0a0a0b; --ink:#ededf0; --mute:#8a8a93; --dim:#55555d; --line:#26262c; --red:#ff2d2d; --ok:#3ddc84;
+  --paper:#eeebe4; --paper-line:#d3cfc5; --paper-mute:#6d6b66;
   --sans:"Geist",system-ui,-apple-system,sans-serif; --mono:"Geist Mono",ui-monospace,monospace;
   --pad:clamp(20px,4vw,72px);
 }
@@ -104,6 +105,58 @@ footer a:hover{color:var(--ink)}
 .note h3{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
 .note p{margin-top:12px;color:var(--mute);font-size:15px;line-height:1.65}
 .note p b{color:var(--ink);font-weight:500}
+
+h1 .r{color:var(--red)}
+main{padding-bottom:70px}
+
+.fork{display:block;width:100%;height:78px;margin:38px 0 0;overflow:visible}
+.fork path{fill:none;stroke:var(--line);stroke-width:1.5}
+.fork .trunk{stroke:var(--red);stroke-width:2}
+.fork .b2{stroke:var(--red);opacity:.55}
+.fork .node{fill:var(--red)}
+
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.path{position:relative;display:flex;flex-direction:column;background:#0c0c0e;
+  border:1px solid var(--line);padding:30px 26px 26px;text-decoration:none;color:inherit;
+  transition:border-color .2s,background .2s,transform .2s}
+.path::after{content:"";position:absolute;left:-1px;right:-1px;top:-1px;height:2px;background:var(--red);
+  transform:scaleX(0);transform-origin:left;transition:transform .32s cubic-bezier(.6,0,.2,1)}
+.path:hover{background:#101014;border-color:#34343c;transform:translateY(-3px)}
+.path:hover::after{transform:scaleX(1)}
+.path.lit{border-color:rgba(255,45,45,.45);background:#120d0f}
+.path.lit::after{transform:scaleX(1)}
+
+.path .n{font-family:var(--mono);font-size:34px;font-weight:500;color:#2e2e36;line-height:1}
+.path.lit .n{color:rgba(255,45,45,.5)}
+.path .flag{position:absolute;top:30px;right:26px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--red);border:1px solid rgba(255,45,45,.4);
+  padding:5px 9px;border-radius:2px}
+.path h2{margin-top:20px;font-size:27px;font-weight:700;letter-spacing:-.025em;line-height:1.12}
+.path h2 .r{color:var(--red)}
+.path p{margin-top:14px;color:var(--mute);font-size:15px;line-height:1.62}
+.path p b{color:var(--ink);font-weight:500}
+.path .need{margin-top:auto;padding-top:18px;font-family:var(--mono);font-size:12.5px;
+  color:var(--dim);line-height:1.5}
+.path .go{margin-top:18px;font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:var(--red)}
+.path .go::after{content:" →";display:inline-block;transition:transform .2s}
+.path:hover .go::after{transform:translateX(4px)}
+
+.band{background:var(--paper);color:#0a0a0b;padding:84px var(--pad) 90px}
+.bandin{max-width:1100px;margin:0 auto}
+.band .kicker.dark{color:#0a0a0b}
+.band .kicker.dark::before{background:var(--red)}
+.band h2{margin-top:20px;font-size:clamp(28px,3.6vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.08}
+.band h2 .r{color:var(--red)}
+.cmp{margin-top:44px;display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1px;
+  background:#d3cfc5;border:1px solid #d3cfc5}
+.cmp > div{background:var(--paper);padding:26px 24px}
+.cmp .h{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#6d6b66}
+.cmp ul{margin-top:16px;list-style:none;display:flex;flex-direction:column;gap:11px}
+.cmp li{position:relative;padding-left:20px;font-size:16px;line-height:1.5}
+.cmp li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;background:var(--red)}
+.band .foot{margin-top:34px;max-width:70ch;color:#6d6b66;font-size:15px;line-height:1.65}
+
+@media (max-width:760px){.fork{height:54px}.band{padding:60px var(--pad) 66px}}
 </style>
 </head>
 <body>
@@ -120,53 +173,80 @@ footer a:hover{color:var(--ink)}
 
 <main>
   <p class="kicker">Start</p>
-  <h1>Start merging.</h1>
-  <p class="lede">Three things live here. Which one you want depends on whether you are paying for
-  work, doing the work, or checking somebody who did it.</p>
+  <h1>Start <span class="r">merging.</span></h1>
+  <p class="lede">Three ways in. Which one is yours depends on whether you are paying for work,
+  doing the work, or checking somebody who already did.</p>
+
+  <!-- el grafo del logo, al reves: un tronco que se abre en tres -->
+  <svg class="fork" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true">
+    <path class="trunk" d="M600 0 V30"/>
+    <path class="br" d="M600 30 C600 70 200 50 200 90"/>
+    <path class="br b2" d="M600 30 V90"/>
+    <path class="br" d="M600 30 C600 70 1000 50 1000 90"/>
+    <circle class="node" cx="600" cy="30" r="7"/>
+  </svg>
 
   <div class="paths">
 
     <a class="path" href="/post">
-      <p class="n">01</p>
-      <h2>I want to pay for work</h2>
+      <span class="n">01</span>
+      <h2>I want to <span class="r">pay</span> for work</h2>
       <p>Lock a reward on a piece of work. The money sits in a contract on GIWA and nobody can move
-      it, Mergit included. When the pull request is merged and CI is green, the developer is paid.
-      You get back a line to paste in the issue.</p>
-      <p class="need">You need a wallet and the amount.</p>
-      <span class="go">Post a bounty &rarr;</span>
+      it, Mergit included. When the pull request is merged and CI is green, the developer is paid.</p>
+      <p class="need">You need a wallet and an amount.</p>
+      <span class="go">Post a bounty</span>
     </a>
 
-    <a class="path" href="/register">
-      <p class="n">02</p>
-      <h2>I want to get paid</h2>
+    <a class="path lit" href="/register">
+      <span class="n">02</span>
+      <span class="flag">no wallet needed</span>
+      <h2>I want to <span class="r">get paid</span></h2>
       <p>The escrow pays a wallet, so it has to know which one is yours. Put one line naming Mergit
-      and your address in your GitHub profile README, and that is enough to be paid.</p>
-      <p class="need">Nothing else. No wallet to connect, no gas, no transaction.</p>
-      <span class="go">Or register on-chain &rarr;</span>
+      and your address in your GitHub profile README. That is the whole thing.</p>
+      <p class="need">No wallet to connect. No gas. Nothing to sign.</p>
+      <span class="go">See how, or register on-chain</span>
     </a>
 
     <a class="path" href="/p/odiseo159-beep">
-      <p class="n">03</p>
-      <h2>I want to check someone</h2>
-      <p>Every builder has a page: what they were paid, which bounty, and <b>who funded it</b>.
-      None of it was written by them or by us. It is read from the chain, and the proof is
-      re-checked against GitHub every time the page loads.</p>
+      <span class="n">03</span>
+      <h2>I want to <span class="r">check</span> someone</h2>
+      <p>Every builder has a page: what they were paid, for which bounty, and <b>who funded it</b>.
+      Read from the chain, with the proof re-checked against GitHub on every load.</p>
       <p class="need">You need their GitHub login.</p>
-      <span class="go">Look up a builder &rarr;</span>
+      <span class="go">Look up a builder</span>
     </a>
 
   </div>
-
-  <div class="note">
-    <h3>About registering on-chain</h3>
-    <p>Writing the line in your profile README is enough to be paid, and it costs nothing. Registering
-    on-chain is the stronger version of the same thing: it stamps the date, gives you a builder page
-    and a badge for your README, and it cannot be overridden by the owner of a repository you
-    contribute to. <b>It is an upgrade, not a toll.</b></p>
-    <p>One wallet holds one login, and the wallet that signs is the wallet that gets paid. If you
-    want to move a login to another wallet, the current one releases it first.</p>
-  </div>
 </main>
+
+<!-- banda de papel: el contraste mas fuerte que tiene la marca -->
+<section class="band">
+  <div class="bandin">
+    <p class="kicker dark">On registering</p>
+    <h2>The README is enough. <span class="r">The chain is the upgrade.</span></h2>
+    <div class="cmp">
+      <div>
+        <p class="h">One line in your profile README</p>
+        <ul>
+          <li>Enough to be paid</li>
+          <li>Costs nothing, takes a minute</li>
+          <li>Nothing signed, no wallet connected</li>
+        </ul>
+      </div>
+      <div>
+        <p class="h">Registered on-chain</p>
+        <ul>
+          <li>Everything above, and</li>
+          <li>The date is stamped and public</li>
+          <li>A builder page and a badge for your README</li>
+          <li>No repository owner can override it</li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot">One wallet holds one login, and the wallet that signs is the wallet that gets
+    paid. To move a login to another wallet, the current one releases it first.</p>
+  </div>
+</section>
 
 <footer>
   <span>MERG<span style="color:var(--red)">IT</span> — Merge it. Get paid.</span>
