@@ -158,11 +158,19 @@ for (const pr of prs) {
     `| | |`,
     `|---|---|`,
     `| Bounty | #${bountyId} |`,
-    `| Paid to | \`${developer}\` — ${who.source === "registry" ? `claimed on-chain by @${author}, proof in ${who.proof}` : `@${author}'s wallet in \`mergit.json\``} |`,
+    `| Paid to | \`${developer}\` — ${paidVia(who, author)} |`,
     `| Amount | ${formatEther(r.event.paidToDeveloper)} ETH (protocol fee ${formatEther(r.event.protocolFee)} ETH) |`,
     `| Verified | merged, CI green on head commit \`${v.evidence.headSha.slice(0, 7)}\` |`,
     `| Evidence hash | \`${r.event.evidenceHash}\` |`,
     `| Transaction | [${r.tx.slice(0, 10)}…${r.tx.slice(-4)}](${r.url}) on GIWA Sepolia |`,
+    ``,
+    `Your record: ${SITE}/p/${author}`,
+    ``,
+    `Put this in your profile README and it will show what your merged work was paid, read straight from the chain:`,
+    ``,
+    '```markdown',
+    `[![Mergit](${SITE}/badge/${author}.svg)](${SITE}/p/${author})`,
+    '```',
     ``,
     `Merge it. Get paid.`,
   ].join("\n"));
@@ -194,4 +202,18 @@ async function comment(number, body) {
 function finish() {
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Mergit\n\n${summary.map((l) => `- ${l}`).join("\n")}\n`);
   process.exit(0);
+}
+
+
+const SITE = "https://www.mergit.xyz";
+
+/**
+ * De donde salio la direccion que cobro. Son tres fuentes y hay que nombrarlas
+ * distinto: decir "mergit.json" cuando el pago vino del README de perfil es
+ * mentir justo en el sitio donde el recibo tiene que ser exacto.
+ */
+function paidVia(who, author) {
+  if (who.source === "registry") return `registered on-chain by @${author}, proof in ${who.proof}`;
+  if (who.source === "profile") return `@${author}'s profile README`;
+  return `@${author}'s wallet in \`mergit.json\``;
 }
