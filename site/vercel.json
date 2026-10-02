@@ -47,6 +47,10 @@
     {
       "source": "/badge/:file",
       "destination": "/api/badge?file=:file"
+    },
+    {
+      "source": "/card/:file",
+      "destination": "/api/badge?file=:file&style=card"
     }
   ]
 }
