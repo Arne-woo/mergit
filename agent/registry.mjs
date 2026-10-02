@@ -149,22 +149,70 @@ export async function checkProof({ login, wallet, proofURI }, token = process.en
 }
 
 /**
+ * El README del perfil: `github.com/<login>/<login>`, que es el repo especial
+ * que GitHub muestra en la página de cada persona.
+ *
+ * Es el camino sin peaje. Para cobrar no hace falta wallet conectada, ni ETH de
+ * faucet, ni firmar nada: una línea en un archivo que ese dev ya edita. Lo que
+ * asegura el vínculo es lo mismo de siempre, que solo esa cuenta puede publicar
+ * ahí; la firma nunca fue lo que lo aseguraba.
+ *
+ * La línea tiene que nombrar a Mergit y llevar una dirección, para que una
+ * dirección de donaciones suelta en un README no se confunda con una intención
+ * de cobrar. Si hay varias direcciones distintas, no se adivina: no se paga.
+ */
+export async function walletFromProfile(login, token = process.env.GITHUB_TOKEN) {
+  const readme = await gh(`/repos/${login}/${login}/readme`, token);
+  if (!readme) return { ok: false, reason: `@${login} has no profile README` };
+
+  const body = Buffer.from(readme.content ?? "", "base64").toString("utf8");
+  const found = [];
+  for (const line of body.split(/[\r\n]+/)) {
+    if (!/mergit/i.test(line)) continue;
+    const m = line.match(/0x[a-fA-F0-9]{40}/);
+    if (m) found.push(m[0].toLowerCase());
+  }
+  const unique = [...new Set(found)];
+  if (unique.length === 0) {
+    return { ok: false, reason: `@${login}'s profile README has no line naming Mergit with an address` };
+  }
+  if (unique.length > 1) {
+    return { ok: false, reason: `@${login}'s profile README names ${unique.length} different addresses, so there is nothing to choose` };
+  }
+  return { ok: true, wallet: unique[0], where: `${login}/${login} README` };
+}
+
+/**
  * A quién pagar por un pull request de `login`.
- *   { source: "registry" | "file" | "none", wallet, reason?, proof? }
- * El registro manda cuando existe y su prueba se sostiene. Si la prueba falla,
- * no se cae al archivo: una reclamación rota tiene que doler, no pasar de largo.
+ *   { source: "registry" | "profile" | "file" | "none", wallet, reason?, proof? }
+ *
+ * Tres fuentes, en este orden y por esta razón:
+ *   1. el registro on-chain, que el dev firmó
+ *   2. su README de perfil, que solo él puede editar
+ *   3. mergit.json, que edita el dueño del repositorio
+ * Las dos primeras las controla quien cobra; la tercera no. Por eso va última:
+ * si mandara el archivo, el dueño de un repo podría desviar el pago de quien
+ * hizo el trabajo.
+ *
+ * Si el registro existe y su prueba falla, no se cae a las siguientes: una
+ * reclamación rota tiene que doler, no pasar de largo.
  */
 export async function resolveWallet(login, fileWallet, token) {
   const claim = await claimFor(login);
-  if (!claim) {
-    return fileWallet
-      ? { source: "file", wallet: fileWallet }
-      : { source: "none", reason: `@${login} has no wallet in the registry or in mergit.json` };
+  if (claim) {
+    const proof = await checkProof(claim, token);
+    if (!proof.ok) {
+      return { source: "none", reason: `@${login} registered ${claim.wallet} on-chain, but ${proof.reason}`, claim };
+    }
+    return { source: "registry", wallet: claim.wallet, proof: proof.where, claim };
   }
 
-  const proof = await checkProof(claim, token);
-  if (!proof.ok) {
-    return { source: "none", reason: `@${login} claimed ${claim.wallet} on-chain, but ${proof.reason}`, claim };
+  const profile = await walletFromProfile(login, token);
+  if (profile.ok) {
+    return { source: "profile", wallet: profile.wallet, proof: profile.where };
   }
-  return { source: "registry", wallet: claim.wallet, proof: proof.where, claim };
+
+  if (fileWallet) return { source: "file", wallet: fileWallet };
+
+  return { source: "none", reason: `@${login} is not in the registry, ${profile.reason}, and mergit.json has no wallet for them` };
 }
