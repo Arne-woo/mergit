@@ -109,6 +109,17 @@ footer{border-top:1px solid var(--line);padding:30px var(--pad);font-family:var(
   display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 footer a:hover{color:var(--ink)}
 @media (max-width:900px){.nav .right span{display:none}}
+
+#show-sec{margin-top:64px}
+.snips{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px}
+.snip{border:1px solid var(--line);background:#0c0c0e;padding:22px}
+.snip .sh{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.snip img{display:block;margin:16px 0;max-width:100%;height:auto}
+.snip pre{background:#111116;border:1px solid var(--line);padding:12px 14px;overflow-x:auto;
+  font-family:var(--mono);font-size:12px;color:var(--mute);white-space:pre;user-select:all}
+.cp{margin-top:12px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  background:none;border:1px solid var(--line);color:var(--ink);padding:9px 14px;cursor:pointer}
+.cp:hover{border-color:var(--red);color:var(--red)}
 </style>
 </head>
 <body>
@@ -159,6 +170,30 @@ footer a:hover{color:var(--ink)}
     <p>Every row is a bounty an agent settled to this wallet after the pull request was merged and its CI was green. The evidence hash on each payment can be recomputed from the pull request by anyone. <b>A bounty somebody funded for themselves is marked as such and does not count</b>: a record of work is only worth what somebody else paid for it.</p>
     <div id="paid-out"></div>
     <p class="note" id="paid-note"></p>
+  </section>
+
+  <!-- Si alguien llega a su propia pagina, lo siguiente que querra es ensenarla.
+       Si no se lo damos aqui hecho, no lo busca. -->
+  <section id="show-sec" hidden>
+    <h2>Show it</h2>
+    <p>This page is public and anyone can check it. If you want it on your GitHub profile, paste one
+    of these into your README. Both read the chain every time somebody looks at them, so they are
+    never out of date, and if the answer is zero they say zero.</p>
+
+    <div class="snips">
+      <div class="snip">
+        <p class="sh">The card</p>
+        <img id="prev-card" alt="" width="480" height="170">
+        <pre id="snip-card"></pre>
+        <button class="cp" data-for="snip-card">Copy</button>
+      </div>
+      <div class="snip">
+        <p class="sh">The small one</p>
+        <img id="prev-badge" alt="">
+        <pre id="snip-badge"></pre>
+        <button class="cp" data-for="snip-badge">Copy</button>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -334,6 +369,30 @@ async function showGitHubProfile(login) {
   }
 }
 
+/**
+ * El bloque "Show it". Solo aparece cuando el login existe de verdad: ofrecerle
+ * un badge a quien no tiene expediente es ofrecerle una imagen que dice cero.
+ */
+function renderShow(login) {
+  const site = location.origin;
+  const card = `[![Mergit](${site}/card/${login}.svg)](${site}/p/${login})`;
+  const badge = `[![Mergit](${site}/badge/${login}.svg)](${site}/p/${login})`;
+  $("prev-card").src = `${site}/card/${login}.svg`;
+  $("prev-badge").src = `${site}/badge/${login}.svg`;
+  $("snip-card").textContent = card;
+  $("snip-badge").textContent = badge;
+  $("show-sec").hidden = false;
+}
+
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest(".cp");
+  if (!b) return;
+  await navigator.clipboard.writeText($(b.dataset.for).textContent);
+  const antes = b.textContent;
+  b.textContent = "Copied";
+  setTimeout(() => (b.textContent = antes), 1600);
+});
+
 function renderPayments(wallet, paid, pending) {
   const out = $("paid-out");
   if (!paid.length && !pending.length) {
@@ -402,6 +461,7 @@ async function load() {
     proof = { ok: false, error: e.message };
   }
   renderClaim(login, claim, proof);
+  renderShow(login);
 
   // Los pagos: los dos escrows, con la etiqueta de cuál fue.
   const want = claim.wallet.toLowerCase();
