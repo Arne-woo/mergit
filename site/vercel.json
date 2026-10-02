@@ -18,6 +18,17 @@
   ],
   "redirects": [
     {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "mergit-nine.vercel.app"
+        }
+      ],
+      "destination": "https://www.mergit.xyz/$1",
+      "permanent": true
+    },
+    {
       "source": "/claim",
       "destination": "/register",
       "permanent": true
