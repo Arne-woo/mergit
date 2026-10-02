@@ -134,6 +134,13 @@ footer a:hover{color:var(--ink)}
         <p>Put this line in a public gist, or in the README of the repository named after you. It is what makes the record true, and anyone can re-read it later:</p>
         <div class="snippet" id="snippet">Connect your wallet and this line will say your address.</div>
         <button class="ghost" id="copy" disabled>Copy the line</button>
+
+        <div id="oauth" hidden>
+          <p class="hint" style="margin-top:18px">Or let GitHub publish it for you. It will ask to let
+          Mergit create gists on your account. We create one public gist with the line above, and
+          keep nothing: no token, no session, no account here.</p>
+          <button class="ghost" id="gh" disabled>Publish it with GitHub</button>
+        </div>
       </div>
 
       <div class="card">
@@ -186,6 +193,11 @@ const say = (html, cls = "line") => {
 };
 
 let account = null;
+
+// El mensaje de error y la URL del gist vienen del fragmento, o sea de fuera:
+// nunca van a innerHTML sin escapar.
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const GIWA = {
   chainId: hex(CHAIN_ID), chainName: "GIWA Sepolia",
@@ -261,7 +273,7 @@ async function checkProof(login, wallet, proofURI) {
 }
 
 function snippetFor(login, wallet) {
-  return `Mergit: my GitHub account ${login || "<your-login>"} is claimed by ${wallet} on GIWA Chain.`;
+  return `Mergit: my GitHub account ${login || "<your-login>"} is registered to ${wallet} on GIWA Chain.`;
 }
 
 $("connect").addEventListener("click", async () => {
@@ -287,6 +299,64 @@ $("connect").addEventListener("click", async () => {
 $("login").addEventListener("input", () => {
   if (account) $("snippet").textContent = snippetFor($("login").value.trim(), account);
 });
+
+/**
+ * OAuth es solo comodidad: publica el gist por ti. La verdad sigue siendo el
+ * gist público y el registro en la cadena, y la prueba la comprueba este mismo
+ * navegador contra GitHub, igual que si la hubieras publicado a mano.
+ */
+(async function githubShortcut() {
+  try {
+    const r = await fetch("/api/github/start?probe=1");
+    const { configured } = await r.json();
+    if (configured) $("oauth").hidden = false;
+  } catch {
+    // sin el atajo la pagina funciona igual: el camino manual es el principal
+  }
+
+  $("gh").addEventListener("click", () => {
+    if (!account) return say("Connect your wallet first: the gist has to contain the address that will be paid.", "line err");
+    location.href = "/api/github/start?wallet=" + encodeURIComponent(account);
+  });
+
+  const frag = new URLSearchParams(location.hash.slice(1));
+  if (!frag.get("err") && !frag.get("gist")) return;
+  history.replaceState(null, "", location.pathname);
+
+  if (frag.get("err")) return say(esc(frag.get("err")), "line err");
+
+  $("login").value = frag.get("login") || "";
+  $("proof").value = frag.get("gist") || "";
+  say(`Proof published as <a href="${esc(frag.get("gist"))}" rel="noopener">a public gist</a>. Checking it now.`);
+
+  // La wallet se perdio en el viaje a GitHub. Si el navegador ya la autorizo,
+  // vuelve sin preguntar nada.
+  const eth = window.ethereum;
+  if (eth) {
+    try {
+      const [addr] = await eth.request({ method: "eth_accounts" });
+      if (addr) {
+        account = addr;
+        $("wallet").value = addr;
+        $("netdot").classList.add("on");
+        $("net").innerHTML = `<i class="dot on"></i> ${addr.slice(0, 6)}…${addr.slice(-4)} · GIWA Sepolia`;
+        $("connect").textContent = "Wallet connected";
+        $("connect").disabled = true;
+        $("check").disabled = false;
+        $("copy").disabled = false;
+        $("gh").disabled = true;
+        $("snippet").textContent = snippetFor($("login").value.trim(), addr);
+      }
+    } catch {
+      // se conecta a mano, el boton sigue ahi
+    }
+  }
+  if (!account) return say("Now connect your wallet to finish.", "line");
+
+  // GitHub tarda un momento en servir un gist recien creado por la API.
+  await new Promise((r) => setTimeout(r, 1200));
+  $("check").click();
+})();
 
 $("copy").addEventListener("click", async () => {
   await navigator.clipboard.writeText($("snippet").textContent);
