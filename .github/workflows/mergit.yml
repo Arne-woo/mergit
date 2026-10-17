@@ -1,0 +1,46 @@
+# Mergit, sobre su propio repositorio. El merge paga.
+#
+# Se fija a un tag, no a la rama. Es deliberado y es la diferencia entre un
+# bounty seguro y uno que no lo es: si esto corriera `main` sin fijar, un pull
+# request ajeno que tocara `agent/` pasaría a ser el código que corre con la
+# clave que firma los pagos. El tag lo mueve una persona, a mano, mirando el
+# diff.
+#
+# Sin el secreto MERGIT_AGENT_KEY la acción igual corre: verifica el pull
+# request y comenta lo que pagaría, sin firmar nada. Es la forma segura de
+# probarla, y es el estado por defecto de este repositorio hasta que el secreto
+# esté puesto.
+name: Mergit
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to re-check
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  checks: read
+  statuses: read
+  pull-requests: write
+
+# Una corrida a la vez: dos eventos del mismo merge no pueden competir por pagar.
+concurrency:
+  group: mergit-settle
+  cancel-in-progress: false
+
+jobs:
+  settle:
+    name: Verify and settle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: odiseo159-beep/mergit@v1.1
+        with:
+          agent-key: ${{ secrets.MERGIT_AGENT_KEY }}
