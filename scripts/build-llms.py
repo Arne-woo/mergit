@@ -29,9 +29,10 @@ CABECERA = """# Mergit
 > work starts. When the work is accepted into the project and its automatic tests
 > pass, an agent releases the payment. No committee, no invoice, no waiting.
 
-This file is the whole documentation in one place, for agents and for anyone who
-would rather read than click. The HTML version lives at https://www.mergit.xyz/docs
-and the source at https://github.com/odiseo159-beep/mergit
+The protocol and the guide for coding agents, in one file, for anyone who would
+rather read than click. The technical one-pager is separate and lives at
+https://www.mergit.xyz/docs: contract design, the trust model, and where this
+sits next to ERC-8004. Source at https://github.com/odiseo159-beep/mergit
 
 Generated from README.md and AGENTS.md in that repository. Do not edit by hand.
 
