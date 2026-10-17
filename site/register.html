@@ -131,7 +131,7 @@ footer a:hover{color:var(--ink)}
       <div class="card">
         <h2>Publish the proof first</h2>
         <p>Put this line in a public gist, or in the README of the repository named after you. It is what makes the record true, and anyone can re-read it later:</p>
-        <div class="snippet" id="snippet">Put your GitHub login and your address above, and this line is ready to copy.</div>
+        <div class="snippet" id="snippet">Fill in your GitHub login and your address, and this line is ready to copy.</div>
         <button class="ghost" id="copy" disabled>Copy the line</button>
 
         <div id="oauth" hidden>
@@ -314,7 +314,7 @@ function pintarLinea() {
     $("snippet").textContent = snippetFor($("login").value.trim(), addr);
     $("copy").disabled = false;
   } else {
-    $("snippet").textContent = "Put your GitHub login and your address above, and this line is ready to copy.";
+    $("snippet").textContent = "Fill in your GitHub login and your address, and this line is ready to copy.";
     $("copy").disabled = true;
   }
 }
