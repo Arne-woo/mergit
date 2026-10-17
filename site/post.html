@@ -59,6 +59,17 @@ input,select{width:100%;margin-top:8px;background:#0a0a0b;color:var(--ink);borde
   padding:13px 14px;font-family:var(--mono);font-size:14px;transition:border-color .2s}
 input:focus,select:focus{outline:none;border-color:var(--red)}
 .hint{margin-top:7px;font-size:12.5px;color:var(--dim);line-height:1.5}
+.pf{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:rgba(255,255,255,.015)}
+.pf-h{display:flex;align-items:center;gap:9px;font-size:13px}
+.pf-dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+.pf-dot.ok{background:#36c76a}.pf-dot.no{background:var(--red)}.pf-dot.warn{background:#d8a33a}
+.pf-l{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:7px}
+.pf-l li{font-size:12.5px;line-height:1.55;color:var(--dim);padding-left:18px;position:relative}
+.pf-l li::before{position:absolute;left:0;top:0;font-family:var(--mono);font-size:11px}
+.pf-l li.no{color:var(--ink)}.pf-l li.no::before{content:"×";color:var(--red)}
+.pf-l li.warn::before{content:"!";color:#d8a33a}
+.pf-l li.ok::before{content:"✓";color:#36c76a}
+.pf-l li.q::before{content:"?";color:var(--dim)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 button{margin-top:28px;width:100%;font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;
   padding:16px;border:1px solid var(--red);background:var(--red);color:#0a0a0b;font-weight:500;cursor:pointer;transition:.2s}
@@ -127,6 +138,11 @@ footer a:hover{color:var(--ink)}
       <label for="uri">What the bounty is for</label>
       <input id="uri" name="uri" placeholder="https://github.com/owner/repo/issues/7" required>
       <p class="hint">An issue, a pull request or a repository. It is written into the bounty, on-chain, so anyone can see what was asked for.</p>
+
+      <div id="pf" class="pf" hidden>
+        <div class="pf-h"><span id="pf-dot" class="pf-dot"></span><b id="pf-t">Checking the repository…</b></div>
+        <ul id="pf-l" class="pf-l"></ul>
+      </div>
 
       <div class="row">
         <div>
@@ -199,6 +215,7 @@ footer a:hover{color:var(--ink)}
 
 <script type="module">
 import { encodeFunctionData, parseEther, decodeEventLog, formatEther } from "https://esm.sh/viem@2.21.55";
+import { preflight } from "/preflight.js";
 
 const CHAIN_ID = 91342;
 const EXPLORER = "https://sepolia-explorer.giwa.io";
@@ -376,6 +393,67 @@ $("form").addEventListener("submit", async (e) => {
     $("submit").disabled = false;
   }
 });
+/* ── ¿Puede Mergit pagar en este repositorio? ───────────────────────────
+   Corre sola cuando dejas de escribir la URL. No bloquea el formulario:
+   avisa. Quien quiera financiar un repositorio roto está en su derecho, pero
+   no debería enterarse cuando ya hay alguien esperando cobrar. */
+{
+  const caja = $("pf"), punto = $("pf-dot"), titulo = $("pf-t"), lista = $("pf-l");
+  let ultimo = "", corriendo = 0;
+
+  const pinta = (estado, texto, filas) => {
+    punto.className = "pf-dot" + (estado ? " " + estado : "");
+    titulo.textContent = texto;
+    lista.innerHTML = "";
+    for (const [clase, linea] of filas) {
+      const li = document.createElement("li");
+      li.className = clase;
+      li.textContent = linea;
+      lista.appendChild(li);
+    }
+    caja.hidden = false;
+  };
+
+  const revisar = async (url) => {
+    const mio = ++corriendo;
+    pinta("", "Checking the repository…", []);
+    let r;
+    try {
+      r = await preflight(url);
+    } catch (e) {
+      if (mio === corriendo) pinta("warn", "Could not check it", [["q", e.message]]);
+      return;
+    }
+    if (mio !== corriendo) return;
+
+    const filas = [
+      ...r.blockers.map((t) => ["no", t]),
+      ...r.warnings.map((t) => ["warn", t]),
+      ...r.facts.map((t) => ["ok", t]),
+      ...r.unknowns.map((t) => ["q", t]),
+    ];
+    if (r.blockers.length) {
+      pinta("no", "This repository cannot pay yet", filas);
+    } else if (r.warnings.length) {
+      pinta("warn", "It can pay, with something worth fixing", filas);
+    } else {
+      pinta("ok", "Ready. A merge here pays.", filas);
+    }
+  };
+
+  let temporizador;
+  $("uri").addEventListener("input", (e) => {
+    const v = e.target.value.trim();
+    clearTimeout(temporizador);
+    if (!/^https?:\/\/(www\.)?github\.com\/[^/]+\/[^/]+/i.test(v)) { caja.hidden = true; ultimo = ""; return; }
+    temporizador = setTimeout(() => {
+      const slug = v.match(/github\.com\/([^/]+\/[^/?#]+)/i)?.[1] ?? "";
+      if (slug === ultimo) return;
+      ultimo = slug;
+      revisar(v);
+    }, 600);
+  });
+}
 </script>
 </body>
 </html>
