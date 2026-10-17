@@ -1,0 +1,143 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Mergit",
+    "version": "1.0.0",
+    "summary": "Bounties for developers on GIWA Chain.",
+    "description": "Most of Mergit is not an API. The money, the claims and the payments live in three contracts on GIWA Sepolia, and anyone can read them without asking this server for permission. What is described here is the small surface the site serves on top of that: images that render a builder's record, and one probe. The contracts are listed under x-mergit-contracts, and the whole documentation in one file is at /llms.txt.",
+    "contact": {
+      "name": "Mergit",
+      "url": "https://www.mergit.xyz"
+    },
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    { "url": "https://www.mergit.xyz", "description": "Production" }
+  ],
+  "externalDocs": {
+    "description": "The whole documentation in one file",
+    "url": "https://www.mergit.xyz/llms.txt"
+  },
+  "x-mergit-chain": {
+    "name": "GIWA Sepolia",
+    "chainId": 91342,
+    "rpc": "https://sepolia-rpc.giwa.io",
+    "explorer": "https://sepolia-explorer.giwa.io",
+    "testnet": true,
+    "note": "A test network. The ETH is practice money; the record is not."
+  },
+  "x-mergit-contracts": {
+    "escrowV1": {
+      "address": "0xffcf206ce1474263aaa3336fb9c8bc3d632e5879",
+      "verified": true,
+      "note": "Holds the payment history and is what the agent uses by default."
+    },
+    "escrowV2": {
+      "address": "0x48d506080abdbed11f1acbe40f799301d9612ad5",
+      "verified": true,
+      "note": "Adds an opt-in challenge window per bounty. A window of zero seconds behaves exactly like v1."
+    },
+    "identityRegistry": {
+      "address": "0x79d44543d20c7c6653f6626687d67d2cd7f2af9c",
+      "verified": true,
+      "note": "One wallet, one GitHub login, one public proof the agent re-checks before paying."
+    }
+  },
+  "paths": {
+    "/badge/{login}.svg": {
+      "get": {
+        "operationId": "getBadge",
+        "summary": "A small badge for a README",
+        "description": "Reads the chain only, never GitHub, and always answers with a valid SVG. A login with no record gets a badge that says so rather than an error. Counting matches the builder record exactly: self-funded bounties are excluded, and so are v1 bounties below number 3, which were tests.",
+        "parameters": [
+          {
+            "name": "login",
+            "in": "path",
+            "required": true,
+            "description": "A GitHub login.",
+            "schema": { "type": "string", "pattern": "^[A-Za-z0-9-]{1,39}$" },
+            "example": "odiseo159-beep"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The badge. Always 200, even when there is nothing to show.",
+            "content": {
+              "image/svg+xml": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/card/{login}.svg": {
+      "get": {
+        "operationId": "getCard",
+        "summary": "The same record, as a larger card",
+        "description": "Same data and same rules as the badge, drawn bigger: bounties paid and how many distinct funders. Amounts are never shown, because this is a test network and a number in ETH would read as money.",
+        "parameters": [
+          {
+            "name": "login",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "pattern": "^[A-Za-z0-9-]{1,39}$" },
+            "example": "odiseo159-beep"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The card.",
+            "content": {
+              "image/svg+xml": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/start": {
+      "get": {
+        "operationId": "probeGithubSignIn",
+        "summary": "Whether the GitHub shortcut is configured on this deployment",
+        "description": "With probe=1 this answers a single boolean and does nothing else. The page asks before drawing the button, so nobody lands in a half-configured flow. Without probe, the route starts an OAuth redirect and is not meant to be called by a program.",
+        "parameters": [
+          {
+            "name": "probe",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["1"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configured or not.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["configured"],
+                  "properties": {
+                    "configured": {
+                      "type": "boolean",
+                      "description": "True when this deployment has GitHub OAuth credentials."
+                    }
+                  }
+                },
+                "example": { "configured": false }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-mergit-not-an-api": {
+    "description": "Things people expect to find here and will not, on purpose.",
+    "items": [
+      "There is no endpoint that pays anybody. Payment is a contract call signed by the bounty's verifier, and this server holds no key.",
+      "There is no endpoint that posts a bounty. /post builds the transaction in your browser and your wallet signs it.",
+      "There is no database. A builder record is assembled from chain events every time it is requested."
+    ]
+  }
+}

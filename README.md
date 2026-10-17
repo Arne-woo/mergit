@@ -20,6 +20,7 @@ Submitted to **GASOK 2026**, Track 04 — AI / Web3.
 | 🪪 Identity registry | [`0x79d44543d20c7c6653f6626687d67d2cd7f2af9c`](https://sepolia-explorer.giwa.io/address/0x79d44543d20c7c6653f6626687d67d2cd7f2af9c) — **verified**. One wallet, one GitHub login, one proof |
 | ⏳ Escrow with a challenge window | [`0x48d506080abdbed11f1acbe40f799301d9612ad5`](https://sepolia-explorer.giwa.io/address/0x48d506080abdbed11f1acbe40f799301d9612ad5) — **verified**. Opt-in per bounty; zero seconds behaves like the escrow above |
 | 🖥 From the browser | [mergit.xyz/post](https://www.mergit.xyz/post) to fund a bounty, [mergit.xyz/register](https://www.mergit.xyz/register) to register a login, [mergit.xyz/p/odiseo159-beep](https://www.mergit.xyz/p/odiseo159-beep) for a builder's record |
+| 🤖 For agents | [llms.txt](https://www.mergit.xyz/llms.txt) — the whole documentation in one file, and [openapi.json](https://www.mergit.xyz/openapi.json) for the small part of this that is an HTTP API |
 
 On 19 September 2026 nobody ran a command: the merge woke the agent inside GitHub Actions, it
 verified the pull request, and the escrow paid the developer **20 seconds later**. Every amount,
