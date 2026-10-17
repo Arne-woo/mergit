@@ -103,6 +103,41 @@ A repository can ship an optional fallback for contributors who have not claimed
 
 in `mergit.json` at the root. The on-chain registry always wins over the file.
 
+## Task 3b — your user wants to take an open bounty
+
+Open bounties are GitHub issues labelled `bounty`. Ask GitHub for them; there is no index to keep
+in sync and nothing to ask us for.
+
+```
+GET https://api.github.com/search/issues?q=repo:odiseo159-beep/mergit+label:bounty+state:open
+```
+
+Every one of them has the same shape, so you can read it without guessing:
+
+- **What done looks like** — the acceptance criteria. If your change does not satisfy all of them,
+  it will not be merged, and nothing that is not merged is paid.
+- **Where it goes** — the paths you may touch. A pull request that writes outside them is out of
+  scope for that bounty.
+- **Bounty: #N** — the number on chain. **Copy that line into your pull request description.** The
+  agent reads it to know which bounty to settle. A pull request without it is merged like any
+  other and pays nobody.
+
+Then, in order:
+
+1. Make sure the author can be paid. One line naming Mergit and their address in the README of
+   their GitHub profile repository is enough, and costs nothing. See Task 3.
+2. Open the pull request, with `Bounty: #N` in its description.
+3. Wait for CI. The agent refuses to pay without a green check on the pull request's head commit:
+   the absence of CI is not CI passing.
+4. A maintainer merges it. The agent settles on its own and comments the receipt underneath, with
+   the amount, the evidence hash and the transaction.
+
+**One bounty, one payment.** The first pull request merged against a bounty takes it. If two
+arrive, the second is still a pull request on its merits, but the money is gone.
+
+**Do not touch `agent/` or `action.yml`.** Those run with the key that signs payments, so changes
+there are not bounty work.
+
 ## Task 4 — read the chain, check a claim, check a record
 
 All of this is public and needs no key.
