@@ -128,7 +128,7 @@
       <span class="fact live">● escrow live on GIWA Sepolia</span>
       <span class="fact"><b>chain</b> 91342</span>
       <span class="fact"><b>solc</b> 0.8.24</span>
-      <span class="fact"><b>tests</b> 14 passing</span>
+      <span class="fact"><b>tests</b> 43 passing</span>
       <span class="fact"><b>team</b> 1</span>
     </div>
   </div>
@@ -389,7 +389,62 @@
 <!-- ── 06 ─────────────────────────────────────────── -->
 <section>
   <div class="wrap">
-    <h2><span class="num">06</span>Stack and execution</h2>
+    <h2><span class="num">06</span>Where this sits next to ERC-8004</h2>
+    <p class="lead">The standard for agent identity exists. Mergit does not use it, and this
+      says why.</p>
+
+    <p><a href="https://eips.ethereum.org/EIPS/eip-8004">ERC-8004, &ldquo;Trustless Agents&rdquo;</a>
+      is a Standards Track ERC created in August 2025, authored out of MetaMask, the Ethereum
+      Foundation, Google and Coinbase. It is a <b>Draft</b>. It defines three registries, meant to
+      be deployed as per-chain singletons on any L2:</p>
+
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Registry</th><th>What it holds</th></tr></thead>
+        <tbody>
+          <tr><td>Identity</td><td>An ERC-721 with URIStorage. The token is the agent&rsquo;s
+            portable handle and resolves to its registration file.</td></tr>
+          <tr><td>Reputation</td><td>Feedback left by the clients an agent worked for.</td></tr>
+          <tr><td>Validation</td><td>Stake-secured re-execution, zkML proofs or TEE attestation,
+            depending on what the value at risk justifies.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What is actually deployed on GIWA today</h3>
+    <p>Checked against GIWA Sepolia, not assumed. The mainnet singletons hold no code here. The
+      Sepolia-flavoured addresses do hold ERC-1967 proxies, pointing at an implementation that has
+      code, but a plain <code>name()</code> call against the identity proxy reverts. The vanity
+      addresses arrived through deterministic deployment; a working ERC-8004 did not.
+      <b>There is nothing on this chain to register against yet.</b></p>
+
+    <h3>Why MergitRegistry is its own contract</h3>
+    <p>Two reasons, and only one of them is timing.</p>
+    <p>The first is that the registry was deployed and used before any of this was reachable on
+      GIWA. The second matters more: <b>ERC-8004 hangs reputation off agent ids, and a builder
+      record describes a person.</b> The claim Mergit stores is a GitHub login bound to a wallet,
+      with a public proof the agent re-checks against GitHub before every payment. That is an
+      identity assertion about a human contributor, not an autonomous agent advertising a service.
+      Mapping one onto the other would be a standards badge, not a working model.</p>
+
+    <div class="box good">
+      <h4>Where it would fit, when it fits</h4>
+      <p>The verifier is the agent in this system. Today there is one, named in every bounty by the
+        funder who posted it. The day a funder has to <i>choose</i> between verifiers, what they
+        will want is exactly what ERC-8004 describes: a portable id with a public record of what
+        that agent settled and whether anyone objected. That is the part worth adopting, and it
+        becomes useful the day there is more than one agent — not before.</p>
+    </div>
+
+    <p>No migration is promised here. The registry is deployed, verified and in use; replacing a
+      working contract to match a Draft would trade something real for something fashionable.</p>
+  </div>
+</section>
+
+<!-- ── 07 ─────────────────────────────────────────── -->
+<section>
+  <div class="wrap">
+    <h2><span class="num">07</span>Stack and execution</h2>
     <div class="tblwrap">
       <table>
         <tr><th style="width:28%">Layer</th><th>Choice and rationale</th></tr>
@@ -424,7 +479,7 @@
 <!-- ── 07 ─────────────────────────────────────────── -->
 <section>
   <div class="wrap">
-    <h2><span class="num">07</span>Verify these claims yourself</h2>
+    <h2><span class="num">08</span>Verify these claims yourself</h2>
     <div class="tblwrap">
       <table>
         <tr><th style="width:32%">Claim</th><th>Where to check it</th></tr>
